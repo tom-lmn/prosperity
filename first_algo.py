@@ -97,16 +97,16 @@ class Trader:
 
                 orders: list[Order] = []				
 				
-                acceptable_price = 10000
+                acceptable_price = 5000
                 
                 for trade in list_banana_trades:
                     self.banana_trades.concat({'quantity': trade.quantity, 'price': trade.price}, ignore_index=True)	 		 
                     
                 
                 if not self.banana_trades.empty:
-                    pearl_price_avg = np.average(a = self.banana_trades['price'], weights = self.banana_trades['quantity'])
+                    banana_price_avg = np.average(a = self.banana_trades['price'], weights = self.banana_trades['quantity'])
                     # Define a fair value for the PEARLS.
-                    acceptable_price = pearl_price_avg
+                    acceptable_price = banana_price_avg
                    
                     
                 if(self.iteration_count > 50):

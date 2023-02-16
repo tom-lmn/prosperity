@@ -37,7 +37,7 @@ class Trader:
                 acceptable_price = 10000
                 
                 for trade in list_pearl_trades:
-                    self.pearl_trades.concat(pd.Series([trade.quantity, trade.price])) 		 
+                    pd.concat([self.pearl_trades, pd.Series([trade.quantity, trade.price])]) 		 
                     
                 
                 if not self.pearl_trades.empty:
@@ -76,7 +76,7 @@ class Trader:
                 banana_trades = pd.DataFrame(columns = ['quantity','price'])
                 
                 for trade in list_banana_trades:
-                    banana_trades.concat(pd.Series([trade.quantity, trade.price]))	 		 
+                    pd.concat([banana_trades, pd.Series([trade.quantity, trade.price])])	 		 
                                    
                 if not banana_trades.empty:
                     banana_price_avg = np.average(a = banana_trades['price'], weights = banana_trades['quantity'])

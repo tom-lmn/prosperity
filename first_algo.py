@@ -5,7 +5,7 @@ import numpy as np
 
 class Trader:
 
-    iteration_count = 0
+    iteration_count = 0 #das ist 0
     pearl_trades = pd.DataFrame(columns = ['quantity','price'])
     pearl_price_avg = int
 

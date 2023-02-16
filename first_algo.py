@@ -93,6 +93,8 @@ class Trader:
             if product == 'BANANAS':
                 order_depth: OrderDepth = state.order_depths[product]
 
+                # we should try to trade some bananas
+
                 if len(order_depth.sell_orders) > 0:
                     best_ask = min(order_depth.sell_orders.keys())
 

@@ -5,7 +5,7 @@ import numpy as np
 
 class Trader:
 
-    iteration_count = 0
+    iteration_count = 0 #das ist 0
     pearl_trades = pd.DataFrame(columns = ['quantity','price'])
     pearl_price_avg = int
 
@@ -92,8 +92,6 @@ class Trader:
 
             if product == 'BANANAS':
                 order_depth: OrderDepth = state.order_depths[product]
-
-                # we should try to trade some bananas
 
                 if len(order_depth.sell_orders) > 0:
                     best_ask = min(order_depth.sell_orders.keys())

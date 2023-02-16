@@ -11,14 +11,19 @@ class Trader:
     pearl_price_avg = int
     banana_array_fifty = np.ones(number_of_trades)*5000
 
-
     def run(self, state: TradingState) -> Dict[str, List[Order]]:
 
         result = {}
         
         if hasattr(state, 'market_trades'):
-            list_pearl_trades = state.market_trades['PEARLS']
-            list_banana_trades = state.market_trades['BANANAS']
+            if 'PEARLS' in state.market_trades:
+                list_pearl_trades = state.market_trades['PEARLS']
+            else:
+                list_pearl_trades = [] 
+            if 'BANANAS' in state.market_trades:
+                list_banana_trades = state.market_trades['BANANAS']
+            else:
+                list_banana_trades = []
         else:
             list_pearl_trades = []
             list_banana_trades = []
@@ -71,10 +76,10 @@ class Trader:
                 banana_trades = pd.DataFrame(columns = ['quantity','price'])
                 
                 for trade in list_banana_trades:
-                    self.banana_trades.concat(pd.Series([trade.quantity, trade.price]))	 		 
+                    banana_trades.concat(pd.Series([trade.quantity, trade.price]))	 		 
                                    
-                if not self.banana_trades.empty:
-                    banana_price_avg = np.average(a = self.banana_trades['price'], weights = self.banana_trades['quantity'])
+                if not banana_trades.empty:
+                    banana_price_avg = np.average(a = banana_trades['price'], weights = banana_trades['quantity'])
                     index = self.iteration_count % self.number_of_trades
                     self.banana_array_fifty[index] = banana_price_avg
 

@@ -6,10 +6,10 @@ import numpy as np
 class Trader:
 
     number_of_trades = 50
-    iteration_count = 0 #das ist 0
+    iteration_count = 0 
     pearl_trades = pd.DataFrame(columns = ['quantity','price'])
     pearl_price_avg = int
-    banana_array_fifty = np.ones(number_of_trades)*5000
+    banana_array_fifty = np.ones(number_of_trades)*4900
 
     def run(self, state: TradingState) -> Dict[str, List[Order]]:
 
@@ -22,6 +22,7 @@ class Trader:
                 list_pearl_trades = [] 
             if 'BANANAS' in state.market_trades:
                 list_banana_trades = state.market_trades['BANANAS']
+                print("Bananen wurden gehandelt")
             else:
                 list_banana_trades = []
         else:
@@ -36,7 +37,7 @@ class Trader:
 				
                 acceptable_price = 10000
                 
-                for trade in list_pearl_trades:
+                for trade in state.market_trades['PEARLS']:
                     pd.concat([self.pearl_trades, pd.Series([trade.quantity, trade.price])]) 		 
                     
                 
@@ -53,14 +54,14 @@ class Trader:
 
                     if best_ask < acceptable_price:
 
-                        print("BUY", str(-best_ask_volume) + "x", best_ask)
+                        print(str(best_ask_volume) + ",", best_ask)
                         orders.append(Order(product, best_ask, -best_ask_volume))
 
                 if len(order_depth.buy_orders) != 0:
                     best_bid = max(order_depth.buy_orders.keys())
                     best_bid_volume = order_depth.buy_orders[best_bid]
                     if best_bid > acceptable_price:
-                        print("SELL", str(best_bid_volume) + "x", best_bid)
+                        print(str(best_bid_volume) + ",", best_bid)
                         orders.append(Order(product, best_bid, -best_bid_volume))
 
                 result[product] = orders
@@ -71,20 +72,23 @@ class Trader:
 
                 orders: list[Order] = []				
 				
-                acceptable_price = 5000
+                acceptable_price = 4900
 
                 banana_trades = pd.DataFrame(columns = ['quantity','price'])
                 
                 for trade in list_banana_trades:
-                    pd.concat([banana_trades, pd.Series([trade.quantity, trade.price])])	 		 
+                    banana_trades = pd.concat([banana_trades, pd.DataFrame([[trade.quantity, trade.price]], columns = ['quantity','price'])])	 		 
                                    
                 if not banana_trades.empty:
                     banana_price_avg = np.average(a = banana_trades['price'], weights = banana_trades['quantity'])
                     index = self.iteration_count % self.number_of_trades
                     self.banana_array_fifty[index] = banana_price_avg
+                    print(banana_price_avg)
 
 
                 acceptable_price = np.average(self.banana_array_fifty)
+
+                print(acceptable_price)
                 
                 order_depth: OrderDepth = state.order_depths[product]
 
@@ -95,14 +99,14 @@ class Trader:
 
                     if best_ask < acceptable_price:
 
-                        print("BUY", str(-best_ask_volume) + "x", best_ask)
+                        print(str(best_ask_volume) + ",", best_ask)
                         orders.append(Order(product, best_ask, -best_ask_volume))
 
                 if len(order_depth.buy_orders) != 0:
                     best_bid = max(order_depth.buy_orders.keys())
                     best_bid_volume = order_depth.buy_orders[best_bid]
                     if best_bid > acceptable_price:
-                        print("SELL", str(best_bid_volume) + "x", best_bid)
+                        print(str(best_bid_volume) + ",", best_bid)
                         orders.append(Order(product, best_bid, -best_bid_volume))
 
                 result[product] = orders

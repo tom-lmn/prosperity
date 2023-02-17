@@ -1,14 +1,20 @@
 from typing import Dict, List
-from datamodel import OrderDepth, TradingState, Order
+from datamodel import OrderDepth, TradingState, Order, Trade
 import pandas as pd
 import numpy as np
 
 class Trader:
 
+    #list of products
+    products = ['PEARLS', 'BANANAS']
+
+    #dict holding the strategy for each product
     strategy = {
         'PEARLS': 'all_time_avg',
         'BANANAS': 'floating_avg_fifty'
     }
+
+    historical_market_trades = Dict[str, List[Trade]]
 
     number_of_trades = 50
     iteration_count = 0 
@@ -16,38 +22,30 @@ class Trader:
     pearl_price_avg = int
     banana_array_fifty = np.ones(number_of_trades)*4900
 
+    def __init__(self) -> None:
+
+        #Fügt leere Liste in für alle Produkte in die Historie ein
+        for product in self.products:
+            self.historical_market_trades[product] = []
+
+
+
     def run(self, state: TradingState) -> Dict[str, List[Order]]:
 
         result = {}
         
-        if hasattr(state, 'market_trades'):
-            if 'PEARLS' in state.market_trades:
-                list_pearl_trades = state.market_trades['PEARLS']
-            else:
-                list_pearl_trades = [] 
-            if 'BANANAS' in state.market_trades:
-                list_banana_trades = state.market_trades['BANANAS']
-                print("Bananen wurden gehandelt")
-            else:
-                list_banana_trades = []
-        else:
-            list_pearl_trades = []
-            list_banana_trades = []
-
         for product in state.order_depths.keys():
 
             if self.strategy[product] == 'all_time_avg':
+                orders: list[Order] = []
 
-                orders: list[Order] = []				
-				
+                self.historical_market_trades[product].extend(state.market_trades[product])
+                				
+				#müssen wir noch abstrahieren
                 acceptable_price = 10000
                 
-                for trade in state.market_trades['PEARLS']:
-                    pd.concat([self.pearl_trades, pd.Series([trade.quantity, trade.price])]) 		 
-                    
-                
                 if not self.pearl_trades.empty:
-                    pearl_price_avg = np.average(a = self.pearl_trades['price'], weights = self.pearl_trades['quantity'])
+                    pearl_price_avg = np.average(a = self.historical_market_trades[product].price, weights = self.historical_market_trades[product].quantity)
                     acceptable_price = pearl_price_avg
                    
                 order_depth: OrderDepth = state.order_depths[product]
@@ -81,7 +79,7 @@ class Trader:
 
                 banana_trades = pd.DataFrame(columns = ['quantity','price'])
                 
-                for trade in list_banana_trades:
+                for trade in state.market_trades['BANANAS']:
                     banana_trades = pd.concat([banana_trades, pd.DataFrame([[trade.quantity, trade.price]], columns = ['quantity','price'])])	 		 
                                    
                 if not banana_trades.empty:
@@ -120,3 +118,7 @@ class Trader:
         self.iteration_count += 1
         print(str(self.iteration_count))
         return result
+
+
+
+   

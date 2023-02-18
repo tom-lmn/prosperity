@@ -29,9 +29,10 @@ class Trader:
         'BANANAS': 50
     }
 
+    #for counting iterations
     iteration_count = 0 
 
-    #Liste wo für jedes Produkt alle market trades gespeichert werden können, siehe __init__
+    #Dictionary wo für jedes Produkt alle market trades gespeichert werden können, siehe __init__
     historical_market_trades = {}
     daily_price = {}
 
@@ -64,23 +65,10 @@ class Trader:
                     acceptable_price = price_avg
                     print(str(acceptable_price))
 
-                #get open orders   
-                order_depth: OrderDepth = state.order_depths[product]
                 #try to find sell order to buy from
-                if len(order_depth.sell_orders) > 0:
-                    best_ask = min(order_depth.sell_orders.keys())
-                    best_ask_volume = order_depth.sell_orders[best_ask]
-                    if best_ask < acceptable_price:
-                        #print(str(best_ask_volume) + ",", best_ask) #falls man loggen will
-                        orders.append(Order(product, best_ask, -best_ask_volume))
 
-                #try to find buy order to sell to
-                if len(order_depth.buy_orders) != 0:
-                    best_bid = max(order_depth.buy_orders.keys())
-                    best_bid_volume = order_depth.buy_orders[best_bid]
-                    if best_bid > acceptable_price:
-                        #print(str(best_bid_volume) + ",", best_bid) #falls man loggen will
-                        orders.append(Order(product, best_bid, -best_bid_volume))
+                orders = self.make_trades(acceptable_price)
+                
                 result[product] = orders
 
 
@@ -127,6 +115,34 @@ class Trader:
         self.iteration_count += 1
         print(str(self.iteration_count))
         return result
+
+    
+    def make_trades(self, acceptable_price: int, product: str, state: TradingState) -> List[Order]:
+        orders: list[Order] = []
+        
+        #get open orders   
+        order_depth: OrderDepth = state.order_depths[product].copy()
+        
+        for best_ask in order_depth.sell_orders.keys():
+            #best_ask = min(order_depth.sell_orders.keys())
+            best_ask_volume = order_depth.sell_orders[best_ask]
+            if best_ask < acceptable_price:
+                #print(str(best_ask_volume) + ",", best_ask) #falls man loggen will
+                orders.append(Order(product, best_ask, -best_ask_volume))
+            else:
+                break
+
+        #try to find buy order to sell to
+        while len(order_depth.buy_orders) != 0:
+            best_bid = max(order_depth.buy_orders.keys())
+            best_bid_volume = order_depth.buy_orders[best_bid]
+            if best_bid > acceptable_price:
+                #print(str(best_bid_volume) + ",", best_bid) #falls man loggen will
+                orders.append(Order(product, best_bid, -best_bid_volume))
+            else:
+                break
+
+        return orders
 
 
 

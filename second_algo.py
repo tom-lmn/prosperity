@@ -30,6 +30,13 @@ class Trader:
         'BANANAS': 50
     }
 
+    #set position limits size limits
+    position_limits = {
+        'BANANAS': 20;
+        'PEARLS': 20;
+    }
+
+
     #for counting iterations
     iteration_count = 0 
 
@@ -46,6 +53,14 @@ class Trader:
     def run(self, state: TradingState) -> Dict[str, List[Order]]:
 
         result = {}
+
+        #to make shure orders do not get rejected because of order size
+        position_if_successfull = {}
+        for product in self.products:
+            if product in state.position:
+                position_if_successfull[product] = state.position[product]
+            else:
+                position_if_successfull[product] = 0
         
         for symbol in self.symbols:
 
@@ -125,10 +140,8 @@ class Trader:
         order_depth: OrderDepth = state.order_depths[symbol].copy()
         current_position = state.position[state.listings[symbol].product]
 
-
-
-        possible_ask_prices = sorted(order_depth.sell_orders)
-        for ask_price in possible_ask_prices:
+        market_ask_prices = sorted(order_depth.sell_orders)
+        for ask_price in market_ask_prices:
             ask_price_volume = order_depth.sell_orders[ask_price]
             if ask_price < acceptable_price:
                 #print(str(best_ask_volume) + ",", ask_price) #falls man loggen will
@@ -137,12 +150,13 @@ class Trader:
                 break
 
         #try to find buy order to sell to
-        while len(order_depth.buy_orders) != 0:
-            best_bid = max(order_depth.buy_orders.keys())
-            best_bid_volume = order_depth.buy_orders[best_bid]
-            if best_bid > acceptable_price:
+        market_bid_prices = sorted(order_depth.buy_orders)
+        for bid_price in market_bid_prices
+            bid_price = max(order_depth.buy_orders.keys())
+            bid_price_volume = order_depth.buy_orders[bid_price]
+            if bid_price > acceptable_price:
                 #print(str(best_bid_volume) + ",", best_bid) #falls man loggen will
-                orders.append(Order(symbol, best_bid, -best_bid_volume))
+                orders.append(Order(symbol, bid_price, -bid_price_volume))
             else:
                 break
 

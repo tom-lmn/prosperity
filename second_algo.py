@@ -2,6 +2,7 @@ from typing import Dict, List
 from datamodel import OrderDepth, TradingState, Order, Trade
 import pandas as pd
 import numpy as np
+import math
 
 class Trader:
 
@@ -27,22 +28,25 @@ class Trader:
 
     #set window size for floating_avg for according symbols
     floating_avg_window = {
-        'BANANAS': 50
+        'BANANAS': 25
     }
 
     #set position limits size limits
     position_limits = {
-        'BANANAS': 20;
-        'PEARLS': 20;
+        'BANANAS': 20,
+        'PEARLS': 20
     }
 
 
     #for counting iterations
     iteration_count = 0 
 
-    #Dictionary wo für jedes Symbol alle market trades gespeichert werden können, siehe __init__
+    #Dictionarys to safe market data for different symbols
     historical_market_trades = {}
     daily_price = {}
+    #to trake how much we are attempting to buy/sell
+    position_if_successfull = {}
+
 
     def __init__(self) -> None:
         #Fügt leere Liste in für alle Symbole in die Historie ein
@@ -55,12 +59,12 @@ class Trader:
         result = {}
 
         #to make shure orders do not get rejected because of order size
-        position_if_successfull = {}
         for product in self.products:
             if product in state.position:
-                position_if_successfull[product] = state.position[product]
+                self.position_if_successfull[product] = state.position[product]
             else:
-                position_if_successfull[product] = 0
+                self.position_if_successfull[product] = 0
+
         
         for symbol in self.symbols:
 
@@ -81,11 +85,10 @@ class Trader:
                     acceptable_price = price_avg
                     print(str(acceptable_price))
 
-                #try to find sell order to buy from
-
-                orders = self.make_trades(acceptable_price)
-                
-                result[symbol] = orders
+                #make orders acoording to price 
+                orders = self.make_trades(acceptable_price, symbol, state, 1)
+                try_orders = self.attempt_trades(acceptable_price, symbol, state, 1)
+                orders.extend(try_orders)
 
 
             if self.strategy[symbol] == 'floating_avg':
@@ -95,73 +98,82 @@ class Trader:
                 
                 acceptable_price = self.avg_price[symbol]	 		 
 
-                daily_price_avg = 0 #das ist noch sehr dummmmmmm
+                #daily_price_avg = 0 #das ist noch sehr dummmmmmm
                 if len(state.market_trades[symbol]) > 0:
                     prices = np.array([getattr(obj, 'price') for obj in state.market_trades[symbol]])    
                     w = np.array([getattr(obj, 'price') for obj in state.market_trades[symbol]])
                     daily_price_avg = np.average(a = prices, weights = w)    
-                    print(daily_price_avg)
+                    #print(daily_price_avg)
                 
                 self.daily_price[symbol].append(daily_price_avg)
                 
                 floating_avg_start = max(self.iteration_count-50, 0)
 
                 acceptable_price = np.average(self.daily_price[symbol][floating_avg_start:self.iteration_count])
-                print(acceptable_price)
+                # print(acceptable_price) for tracking in the log
                 
-                #get open orders   
-                order_depth: OrderDepth = state.order_depths[symbol]
-                #try to find sell order to buy from
-                if len(order_depth.sell_orders) > 0:
-                    best_ask = min(order_depth.sell_orders.keys())
-                    best_ask_volume = order_depth.sell_orders[best_ask]
-                    if best_ask < acceptable_price:
-                        #print(str(best_ask_volume) + ",", best_ask) #falls man loggen will
-                        orders.append(Order(symbol, best_ask, -best_ask_volume))
+                orders = self.make_trades(acceptable_price, symbol, state, 1)
+                try_orders = self.attempt_trades(acceptable_price, symbol, state, 1)
+                orders.extend(try_orders)
 
-                #try to find buy order to sell to
-                if len(order_depth.buy_orders) != 0:
-                    best_bid = max(order_depth.buy_orders.keys())
-                    best_bid_volume = order_depth.buy_orders[best_bid]
-                    if best_bid > acceptable_price:
-                        #print(str(best_bid_volume) + ",", best_bid) #falls man loggen will
-                        orders.append(Order(symbol, best_bid, -best_bid_volume))
-                result[symbol] = orders
+
+            result[symbol] = orders
 
         self.iteration_count += 1
-        print(str(self.iteration_count))
+        # print(str(self.iteration_count)
+
         return result
 
     
     def make_trades(self, acceptable_price: int, symbol: str, state: TradingState) -> List[Order]:
         orders: list[Order] = []
-        
+        product = state.listings[symbol].product
         #get open orders   
         order_depth: OrderDepth = state.order_depths[symbol].copy()
-        current_position = state.position[state.listings[symbol].product]
+        position_limit = self.position_limits[state.listings[symbol].product]
 
+
+        #try to find sell orders to buy from
         market_ask_prices = sorted(order_depth.sell_orders)
         for ask_price in market_ask_prices:
+            max_buy_volume = position_limit - self.position_if_successfull[product]
             ask_price_volume = order_depth.sell_orders[ask_price]
+            buy_volume = min([max_buy_volume, -ask_price_volume]) 
             if ask_price < acceptable_price:
                 #print(str(best_ask_volume) + ",", ask_price) #falls man loggen will
-                orders.append(Order(symbol, ask_price, -ask_price_volume))
+                orders.append(Order(symbol, ask_price, buy_volume))
+                self.position_if_successfull[product] += buy_volume
             else:
                 break
 
         #try to find buy order to sell to
         market_bid_prices = sorted(order_depth.buy_orders)
-        for bid_price in market_bid_prices
-            bid_price = max(order_depth.buy_orders.keys())
+        for bid_price in market_bid_prices:
+            min_sell_volume = - position_limit - self.position_if_successfull[product]
             bid_price_volume = order_depth.buy_orders[bid_price]
+            sell_volume = max([min_sell_volume, -bid_price_volume])
             if bid_price > acceptable_price:
                 #print(str(best_bid_volume) + ",", best_bid) #falls man loggen will
-                orders.append(Order(symbol, bid_price, -bid_price_volume))
+                orders.append(Order(symbol, bid_price, sell_volume))
+                self.position_if_successfull[product] += sell_volume
             else:
                 break
 
         return orders
 
+    
+    def attempt_trades(self, acceptable_price: int, symbol: str, state: TradingState, spread: float) -> List[Order]:
+        orders: list[Order] = []
+        product = state.listings[symbol].product
+        
+        position_limit = self.position_limits[product]
+        buy_volume = position_limit - self.position_if_successfull[product]
+        buy_price = acceptable_price - math.ceil(spread)
+        orders.append(Order(symbol, buy_price, buy_volume))
 
-
-   
+        position_limit = self.position_limits[product]
+        sell_volume = - position_limit - self.position_if_successfull[product]
+        sell_price = acceptable_price + math.ceil(spread)
+        orders.append(Order(symbol, sell_price, sell_volume)) 
+    
+        return orders

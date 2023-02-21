@@ -86,7 +86,7 @@ class Trader:
                     print(str(acceptable_price))
 
                 #make orders acoording to price 
-                orders = self.make_trades(acceptable_price, symbol, state, 1)
+                orders = self.make_trades(acceptable_price, symbol, state)
                 try_orders = self.attempt_trades(acceptable_price, symbol, state, 1)
                 orders.extend(try_orders)
 
@@ -112,7 +112,7 @@ class Trader:
                 acceptable_price = np.average(self.daily_price[symbol][floating_avg_start:self.iteration_count])
                 # print(acceptable_price) for tracking in the log
                 
-                orders = self.make_trades(acceptable_price, symbol, state, 1)
+                orders = self.make_trades(acceptable_price, symbol, state)
                 try_orders = self.attempt_trades(acceptable_price, symbol, state, 1)
                 orders.extend(try_orders)
 
@@ -127,10 +127,11 @@ class Trader:
     
     def make_trades(self, acceptable_price: int, symbol: str, state: TradingState) -> List[Order]:
         orders: list[Order] = []
-        product = state.listings[symbol].product
+        product = symbol #placeholder because the line below gives an Argument Error. Need to find out when listings are filled and with what
+        #product = state.listings[symbol].product
         #get open orders   
         order_depth: OrderDepth = state.order_depths[symbol].copy()
-        position_limit = self.position_limits[state.listings[symbol].product]
+        position_limit = self.position_limits[product]
 
 
         #try to find sell orders to buy from
@@ -164,7 +165,8 @@ class Trader:
     
     def attempt_trades(self, acceptable_price: int, symbol: str, state: TradingState, spread: float) -> List[Order]:
         orders: list[Order] = []
-        product = state.listings[symbol].product
+        product = symbol #placeholder because the line below gives an Argument Error. Need to find out when listings are filled and with what
+        #product = state.listings[symbol].product
         
         position_limit = self.position_limits[product]
         buy_volume = position_limit - self.position_if_successfull[product]

@@ -16,8 +16,8 @@ class Trader:
 
     #dict holding the strategy for each symbol
     strategy = {
-        'PEARLS': 'all_time_avg',
-        'BANANAS': 'floating_avg'
+        'PEARLS': 'fixed_price',
+        'BANANAS': 'none'
     }
 
     #guessed beginning prices can be set here, this contains prices for symbols in 'SEASHELLS'
@@ -68,6 +68,9 @@ class Trader:
         
         for symbol in self.symbols:
 
+            if self.strategy[symbol] == 'fixed_price':
+                orders = self.make_trades(self.avg_price[symbol], symbol, state)
+
             if self.strategy[symbol] == 'all_time_avg':
                 orders: list[Order] = []
                 if symbol in state.market_trades:
@@ -87,8 +90,8 @@ class Trader:
 
                 #make orders acoording to price 
                 orders = self.make_trades(acceptable_price, symbol, state)
-                try_orders = self.attempt_trades(acceptable_price, symbol, state, 1)
-                orders.extend(try_orders)
+                #try_orders = self.attempt_trades(acceptable_price, symbol, state, 1)
+                #orders.extend(try_orders)
 
 
             if self.strategy[symbol] == 'floating_avg':
@@ -130,7 +133,7 @@ class Trader:
         product = symbol #placeholder because the line below gives an Argument Error. Need to find out when listings are filled and with what
         #product = state.listings[symbol].product
         #get open orders   
-        order_depth: OrderDepth = state.order_depths[symbol].copy()
+        order_depth: OrderDepth = state.order_depths[symbol]
         position_limit = self.position_limits[product]
 
 
@@ -141,7 +144,7 @@ class Trader:
             ask_price_volume = order_depth.sell_orders[ask_price]
             buy_volume = min([max_buy_volume, -ask_price_volume]) 
             if ask_price < acceptable_price:
-                #print(str(best_ask_volume) + ",", ask_price) #falls man loggen will
+                #print(str(best_ask_volume) + ",", ask_price) #in case one wants to log
                 orders.append(Order(symbol, ask_price, buy_volume))
                 self.position_if_successfull[product] += buy_volume
             else:
@@ -154,7 +157,7 @@ class Trader:
             bid_price_volume = order_depth.buy_orders[bid_price]
             sell_volume = max([min_sell_volume, -bid_price_volume])
             if bid_price > acceptable_price:
-                #print(str(best_bid_volume) + ",", best_bid) #falls man loggen will
+                #print(str(best_bid_volume) + ",", best_bid) #in case one wants to log
                 orders.append(Order(symbol, bid_price, sell_volume))
                 self.position_if_successfull[product] += sell_volume
             else:

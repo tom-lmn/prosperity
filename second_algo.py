@@ -58,6 +58,7 @@ class Trader:
 
             if self.strategy[symbol] == 'fixed_price':
                 orders = self.make_trades(self.avg_price[symbol], symbol, state)
+                result[symbol] = orders
 
             if self.strategy[symbol] == 'all_time_avg':
                 orders: list[Order] = []
@@ -108,7 +109,7 @@ class Trader:
                 orders.extend(try_orders)
 
 
-            result[symbol] = orders
+            
 
         self.iteration_count += 1
         # print(str(self.iteration_count)
@@ -124,31 +125,27 @@ class Trader:
         order_depth: OrderDepth = state.order_depths[symbol]
         position_limit = self.position_limits[product]
 
-        market_ask_prices = sorted(order_depth.sell_orders)
-
         current_position = 0
         if product in state.position:
             current_position = state.position[product]
     
         #buy (from open sell orders)
+        market_ask_prices = sorted(order_depth.sell_orders)
         for ask_price in market_ask_prices:
-            max_buy_volume = position_limit - current_position
-            ask_price_volume = order_depth.sell_orders[ask_price]
-            buy_volume = min([max_buy_volume, ask_price_volume]) 
+            buy_volume = position_limit - current_position
             if ask_price < acceptable_price:
-                #print(str(best_ask_volume) + ",", ask_price) #in case one wants to log
+                print(str(buy_volume) + ",", ask_price) #in case one wants to log
                 orders.append(Order(symbol, ask_price, buy_volume))
             else:
                 break
 
         #sell (to open buy orders)
-        market_bid_prices = sorted(order_depth.buy_orders)
+        market_bid_prices = sorted(order_depth.buy_orders, reverse = True)
         for bid_price in market_bid_prices:
-            min_sell_volume = - current_position - position_limit
-            bid_price_volume = order_depth.buy_orders[bid_price]
-            sell_volume = max([min_sell_volume, bid_price_volume])
+            print("check" + str(bid_price))
+            sell_volume = - current_position - position_limit
             if bid_price > acceptable_price:
-                #print(str(best_bid_volume) + ",", best_bid) #in case one wants to log
+                print(str(sell_volume) + ",", bid_price) #in case one wants to log
                 orders.append(Order(symbol, bid_price, sell_volume))
             else:
                 break

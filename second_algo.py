@@ -37,7 +37,6 @@ class Trader:
         'PEARLS': 20
     }
 
-
     #for counting iterations
     iteration_count = 0 
 
@@ -54,14 +53,6 @@ class Trader:
     def run(self, state: TradingState) -> Dict[str, List[Order]]:
 
         result = {}
-
-        #to make shure orders do not get rejected because of order size
-        for product in self.products:
-            if product in state.position:
-                self.position_if_successfull[product] = state.position[product]
-            else:
-                self.position_if_successfull[product] = 0
-
         
         for symbol in self.symbols:
 
@@ -171,12 +162,12 @@ class Trader:
         #product = state.listings[symbol].product
         
         position_limit = self.position_limits[product]
-        buy_volume = position_limit - self.position_if_successfull[product]
+        buy_volume = position_limit
         buy_price = acceptable_price - math.ceil(spread)
         orders.append(Order(symbol, buy_price, buy_volume))
 
         position_limit = self.position_limits[product]
-        sell_volume = - position_limit - self.position_if_successfull[product]
+        sell_volume = - position_limit
         sell_price = acceptable_price + math.ceil(spread)
         orders.append(Order(symbol, sell_price, sell_volume)) 
     

@@ -71,7 +71,7 @@ class Trader:
                 if len(self.historical_market_trades[symbol]) > 0:
                     #get prices and according position sizen from historical trades                  
                     prices = np.array([getattr(obj, 'price') for obj in self.historical_market_trades[symbol]])    
-                    w = np.array([getattr(obj, 'price') for obj in self.historical_market_trades[symbol]])
+                    w = np.array([getattr(obj, 'quantity') for obj in self.historical_market_trades[symbol]])
                     #calculate weighted average and set as acceptable price
                     price_avg = np.average(a = prices, weights = w)
                     acceptable_price = price_avg
@@ -93,7 +93,7 @@ class Trader:
                 #daily_price_avg = 0 #das ist noch sehr dummmmmmm
                 if len(state.market_trades[symbol]) > 0:
                     prices = np.array([getattr(obj, 'price') for obj in state.market_trades[symbol]])    
-                    w = np.array([getattr(obj, 'price') for obj in state.market_trades[symbol]])
+                    w = np.array([getattr(obj, 'quantity') for obj in state.market_trades[symbol]])
                     daily_price_avg = np.average(a = prices, weights = w)    
                     #print(daily_price_avg)
                 

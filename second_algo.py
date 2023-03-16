@@ -99,7 +99,7 @@ class Trader:
                 
                 self.daily_price[symbol].append(daily_price_avg)
                 
-                floating_avg_start = max(self.iteration_count-50, 0)
+                floating_avg_start = max(self.iteration_count-15, 0)
 
                 acceptable_price = np.average(self.daily_price[symbol][floating_avg_start:self.iteration_count])
                 # print(acceptable_price) for tracking in the log

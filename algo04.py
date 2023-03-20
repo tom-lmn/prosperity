@@ -27,7 +27,7 @@ class Trader:
     }
 
     #set window size for floating_avg for according symbols
-    floating_avg_window = {
+    moving_avg_window = {
         'BANANAS': 25
     }
 
@@ -41,17 +41,11 @@ class Trader:
     iteration_count = 0 
 
     #Dictionarys to safe market data for different symbols
-    historical_market_trades = {}
+    historical_orders = {}
     daily_price = {}
 
-    def __init__(self) -> None:
-        #Fügt leere Liste in für alle Symbole in die Historie ein
-        for symbol in self.symbols:
-            self.historical_market_trades[symbol] = []
-            self.daily_price[symbol] = []
 
     def run(self, state: TradingState) -> Dict[str, List[Order]]:
-
         result = {}
         
         for symbol in self.symbols:
@@ -85,26 +79,25 @@ class Trader:
 
             if self.strategy[symbol] == 'floating_avg':
                 orders: list[Order] = []				
-                if symbol in state.market_trades:
-                    self.historical_market_trades[symbol].extend(state.market_trades[symbol])
-                
-                acceptable_price = self.avg_price[symbol]	 		 
+                order_depth = state.order_depths[symbol]
+                if not symbol in self.historical_orders:
+                    self.historical_orders[symbol] = pd.DataFrame(columns=["price"])
 
-                #daily_price_avg = 0 #das ist noch sehr dummmmmmm
-                if len(state.market_trades[symbol]) > 0:
-                    prices = np.array([getattr(obj, 'price') for obj in state.market_trades[symbol]])    
-                    w = np.array([getattr(obj, 'quantity') for obj in state.market_trades[symbol]])
-                    daily_price_avg = np.average(a = prices, weights = w)    
-                    #print(daily_price_avg)
+                if len(order_depth.sell_orders) > 0 & len(order_depth.buy_orders) > 0:
+                    best_ask = min(order_depth.sell_orders.keys())
+                    best_bid = min(order_depth.buy_orders.keys()) 
+                    average = (best_ask + best_bid / 2)
+                    self.historical_orders[symbol] = self.historical_orders[symbol].append({"price":average})
                 
-                self.daily_price[symbol].append(daily_price_avg)
+                number_entries = min(self.moving_avg_window[symbol],len(self.historical_orders[symbol]))
+                if number_entries > 0:
+                    last_entries = self.historical_orders[symbol].tail(number_entries)
+                    moving_average_df = last_entries.mean()
+                    moving_average = moving_average_df.iloc[0]['price']
+                    self.make_trades(moving_average, symbol, state)
+                else: self.make_trades(self.avg_price[symbol], symbol, state)
                 
-                floating_avg_start = max(self.iteration_count-15, 0)
 
-                acceptable_price = np.average(self.daily_price[symbol][floating_avg_start:self.iteration_count])
-                # print(acceptable_price) for tracking in the log
-                
-                orders = self.make_trades(acceptable_price, symbol, state)
 
         self.iteration_count += 1
         # print(str(self.iteration_count)
@@ -129,7 +122,7 @@ class Trader:
         for ask_price in market_ask_prices:
             buy_volume = position_limit - current_position
             if ask_price < acceptable_price:
-                print(str(buy_volume) + ",", ask_price) #in case one wants to log
+                print("buy" + str(buy_volume) + ", ", ask_price) #in case one wants to log
                 orders.append(Order(symbol, ask_price, buy_volume))
             else:
                 break
@@ -137,10 +130,9 @@ class Trader:
         #sell (to open buy orders)
         market_bid_prices = sorted(order_depth.buy_orders, reverse = True)
         for bid_price in market_bid_prices:
-            print("check" + str(bid_price))
             sell_volume = - current_position - position_limit
             if bid_price > acceptable_price:
-                print(str(sell_volume) + ",", bid_price) #in case one wants to log
+                print("sell" + str(sell_volume) + " ,", bid_price) #in case one wants to log
                 orders.append(Order(symbol, bid_price, sell_volume))
             else:
                 break

@@ -17,7 +17,7 @@ class Trader:
     #dict holding the strategy for each symbol
     strategy = {
         'PEARLS': 'fixed_price',
-        'BANANAS': 'fixed_price'
+        'BANANAS': 'moving_avg'
     }
 
     #guessed beginning prices can be set here, this contains prices for symbols in 'SEASHELLS'
@@ -28,7 +28,7 @@ class Trader:
 
     #set window size for floating_avg for according symbols
     moving_avg_window = {
-        'BANANAS': 25
+        'BANANAS': 10
     }
 
     #set position limits size limits
@@ -77,7 +77,7 @@ class Trader:
                 #orders.extend(try_orders)
 
 
-            if self.strategy[symbol] == 'floating_avg':
+            if self.strategy[symbol] == 'moving_avg':
                 orders: list[Order] = []				
                 order_depth = state.order_depths[symbol]
                 if not symbol in self.historical_orders:
@@ -122,7 +122,7 @@ class Trader:
         for ask_price in market_ask_prices:
             buy_volume = position_limit - current_position
             if ask_price < acceptable_price:
-                print("buy" + str(buy_volume) + ", ", ask_price) #in case one wants to log
+                print("," + "buy," + str(buy_volume) + ", ", ask_price) #in case one wants to log
                 orders.append(Order(symbol, ask_price, buy_volume))
             else:
                 break
@@ -132,7 +132,7 @@ class Trader:
         for bid_price in market_bid_prices:
             sell_volume = - current_position - position_limit
             if bid_price > acceptable_price:
-                print("sell" + str(sell_volume) + " ,", bid_price) #in case one wants to log
+                print("," + "sell," + str(sell_volume) + " ,", bid_price) #in case one wants to log
                 orders.append(Order(symbol, bid_price, sell_volume))
             else:
                 break

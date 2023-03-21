@@ -134,9 +134,9 @@ class Trader:
                 
                 if len(prices) != 0:
                     prices[0] = np.mean(prices)
-                    
+                    multiplier = 2/(1+len(prices))
                     for i in range(1,len(prices)):
-                        prices[i] = 2/(1+len(prices)) * (prices[i] - prices[i-1]) + prices[i-1]
+                        prices[i] = multiplier * (prices[i] - prices[i-1]) + prices[i-1]
                     acceptable_price = prices[-1]
                     
                 else:

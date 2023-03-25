@@ -191,7 +191,7 @@ class Trader:
 
         #try to offload part of the position if no other trades can be made
         
-        d = 0.40 #fraction of position that we try to unload. Sould be between 0 and 1
+        d = 0.40 #fraction of position that we try to unload. Should be between 0 and 1
         if len(orders) == 0 and current_position != 0:
             if current_position > 0:
                 sell_volume = - math.floor(current_position*d)

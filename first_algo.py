@@ -41,7 +41,7 @@ class Trader:
 
     #set position limits size limits
     position_limits = {
-       'BANANAS': 20,
+        'BANANAS': 20,
         'PEARLS': 20,
         'COCONUTS' : 600,
         'PINA_COLADAS' : 300,

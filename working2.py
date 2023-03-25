@@ -199,6 +199,5 @@ class Trader:
             if current_position < 0:
                 buy_volume = - math.ceil(current_position*d)
                 orders.append(Order(symbol, acceptable_price, buy_volume))
-                
-
+            
         return orders

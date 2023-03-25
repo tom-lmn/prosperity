@@ -30,7 +30,7 @@ class Trader:
         'BANANAS': 4950,
         'COCONUTS' : 8000,
         'PINA_COLADAS' : 15000,
-        'DIVING_GEAR': 3000,
+        'DIVING_GEAR': 99700,
         'BERRIES': 3970
     }
 
@@ -56,6 +56,12 @@ class Trader:
     historical_market_trades = {}
     daily_price = {}
 
+    dolphins_last_round = 0
+    dolphin_jump = False
+    last_dolphin_jump: int
+    buy_gear: bool
+    
+
     def __init__(self) -> None:
         #Fügt leere Liste in für alle Symbole in die Historie ein
         for symbol in self.symbols:
@@ -71,6 +77,59 @@ class Trader:
             if self.strategy[symbol] == 'fixed_price':
                 orders = self.make_trades(self.avg_price[symbol], symbol, state)
                 result[symbol] = orders
+
+
+            if self.strategy[symbol] == 'diving':
+                orders: list[Order] = []
+
+                dolphins = state.observations['DOLPHIN_SIGHTINGS']
+                if state.timestamp >= 100:
+                    if abs(dolphins - self.dolphins_last_round > 10):
+                        self.dolphin_jump = True
+                        self.last_dolphin_jump = state.timestamp
+                        if dolphins - self.dolphins_last_round > 0:
+                            self.buy_gear = True
+                        else: self.buy_gear = False
+                
+
+                rounds_until_exit = 150 # for tuning
+                time_until_exit = rounds_until_exit*100
+
+                order_depth = state.order_depths[symbol]
+                current_position = state.position[symbol]
+                if self.dolphin_jump:
+                    if state.timestamp - self.last_dolphin_jump < 1000: #right after jump is detected buy or sell (for 10 rounds)
+                        if self.buy_gear:
+                            if len(order_depth.sell_orders) > 0:
+                                best_ask = min(order_depth.sell_orders.keys())
+                                volume = self.position_limits[symbol] - current_position
+                                orders.append(Order(symbol, best_ask, volume))
+                        else:
+                            if len(order_depth.buy_orders) > 0:
+                                best_bid = max(order_depth.buy_orders.keys())
+                                volume = -self.position_limits[symbol] - current_position
+                                orders.append(Order(symbol, best_bid, volume))
+                    if state.timestamp - self.last_dolphin_jump > time_until_exit & current_position != 0: #after time_until_exit is over, try to exit position
+                        if self.buy_gear:
+                            if len(order_depth.buy_orders) > 0:
+                                best_bid = max(order_depth.buy_orders.keys())
+                                volume = -self.position_limits[symbol] - current_position
+                                orders.append(Order(symbol, best_bid, volume))
+                        else:
+                            if len(order_depth.sell_orders) > 0:
+                                best_ask = min(order_depth.sell_orders.keys())
+                                volume = self.position_limits[symbol] - current_position
+                                orders.append(Order(symbol, best_ask, volume))
+                    if state.timestamp - self.last_dolphin_jump > time_until_exit & current_position == 0: #when position is exited, return to other behavior
+                        self.dolphin_jump = False
+
+                else:   #if no jump was seen recently, go back to strategy here (fixed_price)
+                    self.make_trades
+                    orders = self.make_trades(self.avg_price[symbol], symbol, state)
+                
+                
+                result[symbol] = orders
+
 
             if self.strategy[symbol] == 'spread_price':
                 orders: list[Order] = []

@@ -17,8 +17,9 @@ class Trader:
 
             # Check if the current product is the 'PEARLS' product, only then run the order logic
             if product == 'DIVING_GEAR':
-                number = state.observations['DOLPHIN_SIGHTINGS']
-                type = type(number)
-                print(str(number), "  ", str(type))
+                if state.timestamp < 1000:
+                    for product in state.observations.keys():
+                        print(product)
+                        print(str(state.observations[product]))
                 
         return result

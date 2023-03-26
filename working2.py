@@ -11,8 +11,8 @@ class Trader:
     HAS TO BE SET MANUALLY
     '''
     #list of symbols
-    products = ['PEARLS', 'BANANAS', 'COCONUTS', 'PINA_COLADAS','BERRIES']
-    symbols = ['PEARLS', 'BANANAS','COCONUTS', 'PINA_COLADAS','BERRIES']
+    products = ['PEARLS', 'BANANAS', 'COCONUTS','DIVING_GEAR', 'PINA_COLADAS','BERRIES']
+    symbols = ['PEARLS', 'BANANAS','COCONUTS','DIVING_GEAR','PINA_COLADAS','BERRIES']
 
     #dict holding the strategy for each symbol
     strategy = {

@@ -109,7 +109,7 @@ class Trader:
                                 volume = -self.position_limits[symbol] - current_position
                                 orders.append(Order(symbol, best_bid, volume))
                                 print("," + "sell," + str(volume) + ", ", best_bid)
-                    if state.timestamp - self.last_dolphin_jump > time_until_exit & current_position != 0: #after time_until_exit is over, try to exit position
+                    if (state.timestamp - self.last_dolphin_jump) > time_until_exit & current_position != 0: #after time_until_exit is over, try to exit position
                         if self.buy_gear:
                             if len(order_depth.buy_orders) > 0:
                                 best_bid = max(order_depth.buy_orders.keys())

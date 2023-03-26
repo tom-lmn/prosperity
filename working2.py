@@ -30,7 +30,7 @@ class Trader:
         'BANANAS': 4950,
         'COCONUTS' : 8000,
         'PINA_COLADAS' : 15000,
-        'DIVING_GEAR': 99800,
+        'DIVING_GEAR': 99200,
         'BERRIES': 3970
     }
 
@@ -55,6 +55,11 @@ class Trader:
     #Dictionarys to safe market data for different symbols
     historical_market_trades = {}
     daily_price = {}
+
+    dolphins_last_round = 0
+    dolphin_jump = False
+    last_dolphin_jump: int
+    buy_gear: bool
 
     def __init__(self) -> None:
         #Fügt leere Liste in für alle Symbole in die Historie ein
@@ -124,7 +129,7 @@ class Trader:
                     self.make_trades
                     orders = self.make_trades(self.avg_price[symbol], symbol, state)
                 
-                
+                self.dolphins_last_round = dolphins
                 result[symbol] = orders
 
             if self.strategy[symbol] == 'spread_price':

@@ -94,7 +94,10 @@ class Trader:
                 time_until_exit = rounds_until_exit*100
 
                 order_depth = state.order_depths[symbol]
-                current_position = state.position[symbol]
+                if symbol in state.position:
+                    current_position = state.position[symbol]
+                else: current_position = 0
+                
                 if self.dolphin_jump:
                     if state.timestamp - self.last_dolphin_jump < 1000: #right after jump is detected buy or sell (for 10 rounds)
                         if self.buy_gear:

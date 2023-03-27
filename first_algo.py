@@ -84,7 +84,7 @@ class Trader:
 
                 dolphins = state.observations['DOLPHIN_SIGHTINGS']
                 if state.timestamp >= 100:
-                    if abs(dolphins - self.dolphins_last_round > 10):
+                    if abs(dolphins - self.dolphins_last_round) > 10:
                         self.dolphin_jump = True
                         self.last_dolphin_jump = state.timestamp
                         if dolphins - self.dolphins_last_round > 0:

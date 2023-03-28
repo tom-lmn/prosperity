@@ -1,9 +1,23 @@
+# Round 4
 
-**Trade objective:**
-The penguins from the north archipelago have invited us to trade on their exchange for one day. You have the opportunity to trade all sorts of new goods against yesterdays prices, just in time before the exchange opens for a new day. In order to get up to speed with their current market dynamics, they have granted you access to their most valuable news source: Iceberg.
+## Algorithm challenge
 
-Your objective is to develop a trading strategy that maximizes your profit. You have 750.000 SeaShells available as trading capital and can choose to either buy or sell different goods. Specify the percentage you want to buy or sell for and make sure it doesn’t exceed you total available capital. Note that there are fees involved in these trades. The more you trade in one good, the higher the fee for that good will be.
+Picnics are all the rage at the moment in the Archipelago, likely owing to the splendid weather. Everyone’s favorite PICNIC_BASKET is now a tradable product. This classy picnic basket contains three things:
 
-Note that you can (re)submit new strategies as long as the round is still in progress. As soon as the round ends, the trading strategy that was submitted last will be processed.
+1. a BAGUETTE
+2. a nice DIP 
+3. a UKULELE for the music
+4. a PICNIC_BASKET containing all three
 
-Good luck and have fun trading!
+All four of the above products can now also be traded on the island exchange. Are the picnic baskets a bit expensive for you taste? Then perhaps see if you can get the contents directly.
+
+Position limits for the newly introduced products:
+
+- BAGUETTE: 150
+- DIP: 300
+- UKULELE: 70
+- PICNIC_BASKET: 70
+
+## Manual challenge
+
+The latest edition of the island newspaper has just come in, and there are all kinds of headlines. Maybe some of these might offer a nice opportunity to trade on? Get your purse ready and buy or sell yourself some of the stocks that are the talk of the town. Be careful how you allocate your capital though, diversification is typically a good thing in trading. Especially if trading fees get progressively higher, the bigger your position in a single stock!

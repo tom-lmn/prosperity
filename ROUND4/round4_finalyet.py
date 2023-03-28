@@ -19,7 +19,7 @@ class Trader:
         'BANANAS': None,
         'COCONUTS' :'fixed_price',
         'PINA_COLADAS' :'fixed_price',
-        'DIVING_GEAR': 'fixed_price',
+        'DIVING_GEAR': None,
         'BERRIES': None,
         'BAGUETTE' : None,
         'DIP': 'fixed_price',
